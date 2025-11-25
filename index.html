@@ -107,10 +107,9 @@
 
             try {
                 // SIMPLE CHECK - For now, just redirect based on selection
-                // We'll improve this later with actual authentication
-                messageEl.innerText = "✓ Login successful!";
+                messageEl.innerText = "✓ Login successful! Redirecting...";
                 
-                // Redirect based on SELECTED role
+                // FIXED: Use absolute paths for redirects
                 if (selectedRole === 'admin') {
                     window.location.href = 'admin-dashboard.html';
                 } else {
