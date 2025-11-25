@@ -1,0 +1,221 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Add Expense - RM TAILORED</title>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.38.0/dist/umd/supabase.min.js"></script>
+    <style>
+        body { 
+            font-family: sans-serif; 
+            margin: 40px; 
+            background: #f5f5f5; 
+        }
+        .container { 
+            max-width: 600px; 
+            margin: 0 auto; 
+            background: white; 
+            padding: 30px; 
+            border-radius: 10px; 
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+        }
+        h1 { 
+            color: #dc143c; 
+            text-align: center; 
+            margin-bottom: 30px;
+        }
+        .form-group { 
+            margin-bottom: 20px; 
+        }
+        label { 
+            display: block; 
+            margin-bottom: 5px; 
+            font-weight: bold;
+        }
+        input, select, textarea { 
+            width: 100%; 
+            padding: 10px; 
+            border: 1px solid #ddd; 
+            border-radius: 5px; 
+            box-sizing: border-box;
+        }
+        textarea { 
+            height: 80px; 
+            resize: vertical;
+        }
+        .btn { 
+            background: #dc143c; 
+            color: white; 
+            padding: 12px 30px; 
+            border: none; 
+            border-radius: 5px; 
+            cursor: pointer; 
+            font-size: 16px; 
+            margin-right: 10px;
+        }
+        .btn:hover { 
+            background: #b01030; 
+        }
+        .btn-cancel { 
+            background: #666; 
+        }
+        .btn-cancel:hover { 
+            background: #555; 
+        }
+        .button-group { 
+            text-align: center; 
+            margin-top: 30px;
+        }
+        .loading { 
+            opacity: 0.6; 
+            pointer-events: none;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>💰 ADD EXPENSE</h1>
+        
+        <form id="expenseForm">
+            <div class="form-group">
+                <label>Description *</label>
+                <input type="text" id="description" placeholder="What was this expense for?" required>
+            </div>
+            
+            <div class="form-group">
+                <label>Amount (₦) *</label>
+                <input type="number" id="amount" placeholder="Enter amount" step="0.01" required>
+            </div>
+            
+            <div class="form-group">
+                <label>Category *</label>
+                <select id="category" required>
+                    <option value="">Select Category</option>
+                    <option value="fabric">Fabric & Materials</option>
+                    <option value="thread">Thread & Notions</option>
+                    <option value="equipment">Equipment Maintenance</option>
+                    <option value="rent">Shop Rent</option>
+                    <option value="electricity">Electricity Bill</option>
+                    <option value="transport">Transportation</option>
+                    <option value="staff">Staff Payment</option>
+                    <option value="other">Other Expense</option>
+                </select>
+            </div>
+            
+            <div class="form-group">
+                <label>Date *</label>
+                <input type="date" id="date" required>
+            </div>
+            
+            <div class="form-group">
+                <label>Notes (Optional)</label>
+                <textarea id="notes" placeholder="Any additional notes..."></textarea>
+            </div>
+            
+            <div class="button-group">
+                <button type="button" class="btn" id="saveBtn" onclick="saveExpense()">💾 SAVE EXPENSE</button>
+                <button type="button" class="btn btn-cancel" onclick="goBack()">❌ CANCEL</button>
+            </div>
+        </form>
+    </div>
+
+    <script>
+        // Initialize Supabase
+        const supabaseUrl = 'https://jahrvqdxbdcnqnxuhewf.supabase.co';
+        const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImphaHJ2cWR4YmRjbnFueHVoZXdmIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjI3MDY4ODUsImV4cCI6MjA3ODI4Mjg4NX0._Q8_o41iN2_roejx67FvOQ8DlMApPdw0L3bmWhymgNc';
+        const supabase = window.supabase.createClient(supabaseUrl, supabaseKey);
+
+        // Set default date to today
+        const today = new Date().toISOString().split('T')[0];
+        document.getElementById('date').value = today;
+
+        async function saveExpense() {
+            const description = document.getElementById('description').value;
+            const amount = document.getElementById('amount').value;
+            const category = document.getElementById('category').value;
+            const date = document.getElementById('date').value;
+            const notes = document.getElementById('notes').value;
+            const saveBtn = document.getElementById('saveBtn');
+
+            if (!description || !amount || !category || !date) {
+                alert('Please fill all required fields!');
+                return;
+            }
+
+            // Show loading state
+            saveBtn.textContent = 'Saving...';
+            saveBtn.classList.add('loading');
+
+            try {
+                console.log("Starting to save expense...");
+
+                // Get current user
+                const { data: { user }, error: userError } = await supabase.auth.getUser();
+                
+                if (userError || !user) {
+                    alert('Please login again!');
+                    window.location.href = 'index.html';
+                    return;
+                }
+
+                console.log("User found:", user.id);
+
+                // Prepare expense data
+                const expenseData = {
+                    description: description,
+                    amount: parseFloat(amount),
+                    category: category,
+                    date: date,
+                    notes: notes,
+                    created_by: user.id
+                };
+
+                console.log("Saving expense data:", expenseData);
+
+                // Save to database
+                const { data, error } = await supabase
+                    .from('expenses')
+                    .insert([expenseData])
+                    .select();
+
+                if (error) {
+                    console.error("Database error:", error);
+                    throw error;
+                }
+
+                console.log("Expense saved successfully:", data);
+                
+                alert(`✅ Expense saved successfully!\n\nDescription: ${description}\nAmount: ₦${amount}\nCategory: ${category}\nDate: ${date}`);
+                
+                // Clear form
+                document.getElementById('expenseForm').reset();
+                document.getElementById('date').value = today;
+
+            } catch (error) {
+                console.error("Full error details:", error);
+                alert('❌ Error saving expense: ' + error.message);
+            } finally {
+                // Reset button
+                saveBtn.textContent = '💾 SAVE EXPENSE';
+                saveBtn.classList.remove('loading');
+            }
+        }
+
+        function goBack() {
+            if (document.referrer) {
+                window.history.back();
+            } else {
+                window.location.href = 'admin-dashboard.html';
+            }
+        }
+
+        // Test Supabase connection on load
+        supabase.auth.getUser().then(({ data: { user } }) => {
+            if (user) {
+                console.log("User is logged in:", user.email);
+            } else {
+                console.log("No user logged in - redirecting to login");
+                window.location.href = 'index.html';
+            }
+        });
+    </script>
+</body>
+</html>

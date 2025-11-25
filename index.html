@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>RM TAILORED - Login</title>
+    <style>
+        body { 
+            font-family: sans-serif; 
+            display: flex; 
+            justify-content: center; 
+            align-items: center; 
+            height: 100vh; 
+            background: #f0f2f5; 
+            margin: 0;
+        }
+        .login-box { 
+            background: white; 
+            padding: 2rem; 
+            border-radius: 10px; 
+            box-shadow: 0 0 10px rgba(0,0,0,0.1); 
+            text-align: center; 
+            width: 320px;
+        }
+        input, select, button { 
+            width: 100%; 
+            padding: 12px; 
+            margin: 8px 0; 
+            box-sizing: border-box; 
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            font-size: 16px;
+        }
+        button { 
+            background: #228B22; 
+            color: white; 
+            border: none; 
+            cursor: pointer; 
+            margin-top: 15px;
+        }
+        button:disabled {
+            background: #cccccc;
+            cursor: not-allowed;
+        }
+        #message {
+            color: red;
+            min-height: 20px;
+            margin-top: 10px;
+        }
+        h2 {
+            color: #228B22;
+            margin-bottom: 25px;
+        }
+    </style>
+</head>
+<body>
+    <div class="login-box">
+        <h2>RM TAILORED</h2>
+        <input type="email" id="email" placeholder="Email" value="admin@rmtailored.com">
+        <input type="password" id="password" placeholder="Password" value="admin123">
+        
+        <select id="role">
+            <option value="">Select Login Type</option>
+            <option value="admin">👑 Admin Login</option>
+            <option value="worker">👨‍💼 Worker Login</option>
+        </select>
+        
+        <button id="loginBtn">Login</button>
+        <p id="message"></p>
+    </div>
+
+<script>
+    // Load Supabase from reliable CDN
+    const script = document.createElement('script');
+    script.src = 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.38.0/dist/umd/supabase.min.js';
+    script.onload = initApp;
+    document.head.appendChild(script);
+
+    function initApp() {
+        console.log("Supabase loaded successfully!");
+        
+        // Initialize Supabase
+        const supabaseUrl = 'https://jahrvqdxbdcnqnxuhewf.supabase.co';
+        const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImphaHJ2cWR4YmRjbnFueHVoZXdmIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjI3MDY4ODUsImV4cCI6MjA3ODI4Mjg4NX0._Q8_o41iN2_roejx67FvOQ8DlMApPdw0L3bmWhymgNc';
+        
+        window.supabase = supabase.createClient(supabaseUrl, supabaseKey);
+        
+        // Enable login button
+        const loginBtn = document.getElementById('loginBtn');
+        
+        // Add login function
+        loginBtn.addEventListener('click', async function() {
+            const email = document.getElementById('email').value;
+            const password = document.getElementById('password').value;
+            const selectedRole = document.getElementById('role').value;
+            const messageEl = document.getElementById('message');
+
+            if (!email || !password || !selectedRole) {
+                messageEl.innerText = "Please fill all fields!";
+                return;
+            }
+
+            loginBtn.disabled = true;
+            loginBtn.textContent = 'Logging in...';
+            messageEl.innerText = "Please wait...";
+            messageEl.style.color = "blue";
+
+            try {
+                // SIMPLE CHECK - For now, just redirect based on selection
+                // We'll improve this later with actual authentication
+                messageEl.innerText = "✓ Login successful!";
+                
+                // Redirect based on SELECTED role
+                if (selectedRole === 'admin') {
+                    window.location.href = 'admin-dashboard.html';
+                } else {
+                    window.location.href = 'worker-dashboard.html';
+                }
+                
+            } catch (error) {
+                messageEl.innerText = "Error: " + error.message;
+                messageEl.style.color = "red";
+                console.error("Login error:", error);
+                loginBtn.disabled = false;
+                loginBtn.textContent = 'Login';
+            }
+        });
+        
+        console.log("App ready! You can login now.");
+    }
+</script>
+</body>
+</html>

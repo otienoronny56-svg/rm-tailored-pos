@@ -1,0 +1,233 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Add New Order - RM TAILORED</title>
+    <style>
+        body { 
+            font-family: sans-serif; 
+            margin: 40px; 
+            background: #f5f5f5; 
+        }
+        .container { 
+            max-width: 600px; 
+            margin: 0 auto; 
+            background: white; 
+            padding: 30px; 
+            border-radius: 10px; 
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+        }
+        h1 { 
+            color: #228B22; 
+            text-align: center; 
+            margin-bottom: 30px;
+        }
+        .form-group { 
+            margin-bottom: 20px; 
+        }
+        label { 
+            display: block; 
+            margin-bottom: 5px; 
+            font-weight: bold;
+        }
+        input, select, textarea { 
+            width: 100%; 
+            padding: 10px; 
+            border: 1px solid #ddd; 
+            border-radius: 5px; 
+            box-sizing: border-box;
+        }
+        textarea { 
+            height: 80px; 
+            resize: vertical;
+        }
+        .btn { 
+            background: #228B22; 
+            color: white; 
+            padding: 12px 30px; 
+            border: none; 
+            border-radius: 5px; 
+            cursor: pointer; 
+            font-size: 16px; 
+            margin-right: 10px;
+        }
+        .btn:hover { 
+            background: #1e7b1e; 
+        }
+        .btn-cancel { 
+            background: #dc143c; 
+        }
+        .btn-cancel:hover { 
+            background: #b01030; 
+        }
+        .button-group { 
+            text-align: center; 
+            margin-top: 30px;
+        }
+        .loading { 
+            opacity: 0.6; 
+            pointer-events: none;
+        }
+    </style>
+    <!-- Load Supabase FIRST -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.38.0/dist/umd/supabase.min.js"></script>
+</head>
+<body>
+    <div class="container">
+        <h1>➕ ADD NEW ORDER</h1>
+        
+        <form id="orderForm">
+            <div class="form-group">
+                <label>Customer Name *</label>
+                <input type="text" id="customerName" required>
+            </div>
+            
+            <div class="form-group">
+                <label>Phone Number *</label>
+                <input type="tel" id="customerPhone" required>
+            </div>
+            
+            <div class="form-group">
+                <label>Order Type *</label>
+                <select id="orderType" required>
+                    <option value="">Select Order Type</option>
+                    <option value="shirt">Shirt</option>
+                    <option value="trouser">Trouser</option>
+                    <option value="suit">Suit</option>
+                    <option value="dress">Dress</option>
+                    <option value="alteration">Alteration</option>
+                    <option value="other">Other</option>
+                </select>
+            </div>
+            
+            <div class="form-group">
+                <label>Due Date *</label>
+                <input type="date" id="dueDate" required>
+            </div>
+            
+            <div class="form-group">
+                <label>Price (₦)</label>
+                <input type="number" id="price" placeholder="Enter amount">
+            </div>
+            
+            <div class="form-group">
+                <label>Measurements / Notes</label>
+                <textarea id="notes" placeholder="Chest: 42, Waist: 38..."></textarea>
+            </div>
+            
+            <div class="button-group">
+                <button type="button" class="btn" id="saveBtn">💾 SAVE ORDER</button>
+                <button type="button" class="btn btn-cancel" onclick="goBack()">❌ CANCEL</button>
+            </div>
+        </form>
+    </div>
+
+    <script>
+        // Wait for page to load completely
+        document.addEventListener('DOMContentLoaded', function() {
+            // Initialize Supabase
+            const supabaseUrl = 'https://jahrvqdxbdcnqnxuhewf.supabase.co';
+            const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImphaHJ2cWR4YmRjbnFueHVoZXdmIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjI3MDY4ODUsImV4cCI6MjA3ODI4Mjg4NX0._Q8_o41iN2_roejx67FvOQ8DlMApPdw0L3bmWhymgNc';
+            const supabase = window.supabase.createClient(supabaseUrl, supabaseKey);
+
+            // Set minimum date to today
+            const today = new Date().toISOString().split('T')[0];
+            document.getElementById('dueDate').min = today;
+
+            // Add event listener to save button
+            document.getElementById('saveBtn').addEventListener('click', saveOrder);
+
+            async function saveOrder() {
+                const customerName = document.getElementById('customerName').value;
+                const customerPhone = document.getElementById('customerPhone').value;
+                const orderType = document.getElementById('orderType').value;
+                const dueDate = document.getElementById('dueDate').value;
+                const price = document.getElementById('price').value;
+                const notes = document.getElementById('notes').value;
+                const saveBtn = document.getElementById('saveBtn');
+
+                if (!customerName || !customerPhone || !orderType || !dueDate) {
+                    alert('Please fill all required fields!');
+                    return;
+                }
+
+                // Show loading state
+                saveBtn.textContent = 'Saving...';
+                saveBtn.classList.add('loading');
+
+                try {
+                    console.log("Starting to save order...");
+
+                    // Get current user
+                    const { data: { user }, error: userError } = await supabase.auth.getUser();
+                    
+                    if (userError || !user) {
+                        alert('Please login again!');
+                        window.location.href = 'index.html';
+                        return;
+                    }
+
+                    console.log("User found:", user.id);
+
+                    // Prepare order data
+                    const orderData = {
+                        customer_name: customerName,
+                        customer_phone: customerPhone,
+                        order_type: orderType,
+                        due_date: dueDate,
+                        price: price ? parseFloat(price) : null,
+                        notes: notes,
+                        created_by: user.id,
+                        status: 'pending'
+                    };
+
+                    console.log("Saving order data:", orderData);
+
+                    // Save to database
+                    const { data, error } = await supabase
+                        .from('orders')
+                        .insert([orderData])
+                        .select();
+
+                    if (error) {
+                        console.error("Database error:", error);
+                        throw error;
+                    }
+
+                    console.log("Order saved successfully:", data);
+                    
+                    alert(`✅ Order saved successfully!\n\nOrder ID: ${data[0].id}\nCustomer: ${customerName}\nOrder Type: ${orderType}\nDue Date: ${dueDate}`);
+                    
+                    // Clear form
+                    document.getElementById('orderForm').reset();
+
+                } catch (error) {
+                    console.error("Full error details:", error);
+                    alert('❌ Error saving order: ' + error.message);
+                } finally {
+                    // Reset button
+                    saveBtn.textContent = '💾 SAVE ORDER';
+                    saveBtn.classList.remove('loading');
+                }
+            }
+
+            // Test Supabase connection on load
+            supabase.auth.getUser().then(({ data: { user } }) => {
+                if (user) {
+                    console.log("User is logged in:", user.email);
+                } else {
+                    console.log("No user logged in - redirecting to login");
+                    window.location.href = 'index.html';
+                }
+            });
+        });
+
+        function goBack() {
+            if (document.referrer) {
+                window.history.back();
+            } else {
+                window.location.href = 'worker-dashboard.html';
+            }
+        }
+    </script>
+</body>
+</html>
