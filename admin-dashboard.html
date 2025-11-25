@@ -2,6 +2,7 @@
 <html>
 <head>
     <title>Admin Dashboard - RM TAILORED</title>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.38.0/dist/umd/supabase.min.js"></script>
     <style>
         body { font-family: sans-serif; margin: 40px; background: #f5f5f5; }
         .dashboard { max-width: 800px; margin: 0 auto; background: white; padding: 20px; border-radius: 10px; }
@@ -15,14 +16,35 @@
     <div class="dashboard">
         <h1>RM TAILORED - Admin Dashboard</h1>
         <div class="button-grid">
-            <button class="btn" onclick="location.href='manage-workers.html'">👥 MANAGE WORKERS</button>
-            <button class="btn" onclick="location.href='add-order.html'">➕ ADD NEW ORDER</button>
-            <button class="btn" onclick="location.href='all-orders.html'">📋 ALL ORDERS</button>
-            <button class="btn" onclick="location.href='view-expenses.html'">💰 ADD EXPENSE</button>
-            <button class="btn" onclick="location.href='financial-overview.html'">📊 FINANCIAL OVERVIEW</button>
-            <button class="btn" onclick="location.href='advanced-reports.html'">📈 ADVANCED REPORTS</button>
+            <button class="btn" onclick="location.href='/manage-workers.html'">👥 MANAGE WORKERS</button>
+            <button class="btn" onclick="location.href='/add-order.html'">➕ ADD NEW ORDER</button>
+            <button class="btn" onclick="location.href='/all-orders.html'">📋 VIEW ALL ORDERS</button>
+            <button class="btn" onclick="location.href='/add-expense.html'">💰 ADD EXPENSE</button>
+            <button class="btn" onclick="location.href='/financial-overview.html'">📊 FINANCIAL OVERVIEW</button>
+            <button class="btn" onclick="location.href='/advanced-reports.html'">📈 ADVANCED REPORTS</button>
         </div>
-        <p style="text-align: center; margin-top: 40px;"><a href="index.html">Logout</a></p>
+        <p style="text-align: center; margin-top: 40px;">
+            <button onclick="logout()" style="background: #666; color: white; padding: 10px 20px; border: none; border-radius: 5px; cursor: pointer;">Logout</button>
+        </p>
     </div>
+
+    <script>
+        // Initialize Supabase
+        const supabaseUrl = 'https://jahrvqdxbdcnqnxuhewf.supabase.co';
+        const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImphaHJ2cWR4YmRjbnFueHVoZXdmIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjI3MDY4ODUsImV4cCI6MjA3ODI4Mjg4NX0._Q8_o41iN2_roejx67FvOQ8DlMApPdw0L3bmWhymgNc';
+        const supabase = window.supabase.createClient(supabaseUrl, supabaseKey);
+
+        // Check authentication on page load
+        supabase.auth.getUser().then(({ data: { user } }) => {
+            if (!user) {
+                window.location.href = '/index.html';
+            }
+        });
+
+        async function logout() {
+            await supabase.auth.signOut();
+            window.location.href = '/index.html';
+        }
+    </script>
 </body>
 </html>
