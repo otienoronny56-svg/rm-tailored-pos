@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>RM TAILORED - Login</title>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.38.0/dist/umd/supabase.min.js"></script>
     <style>
         body { 
             font-family: sans-serif; 
@@ -70,25 +71,14 @@
     </div>
 
 <script>
-    // Load Supabase from reliable CDN
-    const script = document.createElement('script');
-    script.src = 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.38.0/dist/umd/supabase.min.js';
-    script.onload = initApp;
-    document.head.appendChild(script);
+    // Initialize Supabase
+    const supabaseUrl = 'https://jahrvqdxbdcnqnxuhewf.supabase.co';
+    const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImphaHJ2cWR4YmRjbnFueHVoZXdmIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjI3MDY4ODUsImV4cCI6MjA3ODI4Mjg4NX0._Q8_o41iN2_roejx67FvOQ8DlMApPdw0L3bmWhymgNc';
+    const supabase = window.supabase.createClient(supabaseUrl, supabaseKey);
 
-    function initApp() {
-        console.log("Supabase loaded successfully!");
-        
-        // Initialize Supabase
-        const supabaseUrl = 'https://jahrvqdxbdcnqnxuhewf.supabase.co';
-        const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImphaHJ2cWR4YmRjbnFueHVoZXdmIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjI3MDY4ODUsImV4cCI6MjA3ODI4Mjg4NX0._Q8_o41iN2_roejx67FvOQ8DlMApPdw0L3bmWhymgNc';
-        
-        window.supabase = supabase.createClient(supabaseUrl, supabaseKey);
-        
-        // Enable login button
+    document.addEventListener('DOMContentLoaded', function() {
         const loginBtn = document.getElementById('loginBtn');
         
-        // Add login function
         loginBtn.addEventListener('click', async function() {
             const email = document.getElementById('email').value;
             const password = document.getElementById('password').value;
@@ -106,27 +96,40 @@
             messageEl.style.color = "blue";
 
             try {
-                // SIMPLE CHECK - For now, just redirect based on selection
-                messageEl.innerText = "✓ Login successful! Redirecting...";
+                console.log("Attempting login with:", email);
                 
-                // FIXED: Use absolute paths for redirects
+                const { data, error } = await supabase.auth.signInWithPassword({
+                    email: email,
+                    password: password
+                });
+
+                if (error) {
+                    console.error("Login error:", error);
+                    throw error;
+                }
+
+                console.log("Login successful:", data.user);
+                messageEl.innerText = "✓ Login successful! Redirecting...";
+                messageEl.style.color = "green";
+
+                // Use ABSOLUTE PATHS for production
                 if (selectedRole === 'admin') {
-                    window.location.href = 'admin-dashboard.html';
+                    window.location.href = '/admin-dashboard.html';
                 } else {
-                    window.location.href = 'worker-dashboard.html';
+                    window.location.href = '/worker-dashboard.html';
                 }
                 
             } catch (error) {
+                console.error("Full error:", error);
                 messageEl.innerText = "Error: " + error.message;
                 messageEl.style.color = "red";
-                console.error("Login error:", error);
                 loginBtn.disabled = false;
                 loginBtn.textContent = 'Login';
             }
         });
         
-        console.log("App ready! You can login now.");
-    }
+        console.log("Login page ready!");
+    });
 </script>
 </body>
 </html>
