@@ -4,7 +4,6 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>RM TAILORED - Login</title>
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.38.0/dist/umd/supabase.min.js"></script>
     <style>
         body { 
             font-family: sans-serif; 
@@ -39,10 +38,6 @@
             cursor: pointer; 
             margin-top: 15px;
         }
-        button:disabled {
-            background: #cccccc;
-            cursor: not-allowed;
-        }
         #message {
             color: red;
             min-height: 20px;
@@ -71,12 +66,7 @@
     </div>
 
 <script>
-    // Initialize Supabase
-    const supabaseUrl = 'https://jahrvqdxbdcnqnxuhewf.supabase.co';
-    const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImphaHJ2cWR4YmRjbnFueHVoZXdmIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjI3MDY4ODUsImV4cCI6MjA3ODI4Mjg4NX0._Q8_o41iN2_roejx67FvOQ8DlMApPdw0L3bmWhymgNc';
-    const supabase = window.supabase.createClient(supabaseUrl, supabaseKey);
-
-    document.getElementById('loginBtn').addEventListener('click', async function() {
+    document.getElementById('loginBtn').addEventListener('click', function() {
         const email = document.getElementById('email').value;
         const password = document.getElementById('password').value;
         const selectedRole = document.getElementById('role').value;
@@ -93,34 +83,18 @@
         messageEl.innerText = "Please wait...";
         messageEl.style.color = "blue";
 
-        try {
-            console.log("Attempting login with:", email);
-            
-            const { data, error } = await supabase.auth.signInWithPassword({
-                email: email,
-                password: password
-            });
-
-            if (error) throw error;
-
-            console.log("Login successful!");
-            messageEl.innerText = "✓ Login successful! Redirecting...";
+        // SIMPLE REDIRECT - NO SUPABASE FOR NOW
+        setTimeout(function() {
+            messageEl.innerText = "✓ Login successful!";
             messageEl.style.color = "green";
-
-            // Use SIMPLE relative paths
-            if (selectedRole === 'admin') {
-                window.location.href = 'admin-dashboard.html';
-            } else {
-                window.location.href = 'worker-dashboard.html';
-            }
             
-        } catch (error) {
-            console.error("Login error:", error);
-            messageEl.innerText = "Error: " + error.message;
-            messageEl.style.color = "red";
-            loginBtn.disabled = false;
-            loginBtn.textContent = 'Login';
-        }
+            // FORCE REDIRECT
+            if (selectedRole === 'admin') {
+                window.location.href = 'https://rm-tailored-pos.vercel.app/admin-dashboard.html';
+            } else {
+                window.location.href = 'https://rm-tailored-pos.vercel.app/worker-dashboard.html';
+            }
+        }, 1000);
     });
 </script>
 </body>
